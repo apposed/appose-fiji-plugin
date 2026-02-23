@@ -97,7 +97,7 @@ public class ApposeFijiPluginExample implements PlugIn
 			final Img< T > output = new ShmImg<>( maskArr );
 			ImageJFunctions.show( output );
 		}
-		catch ( final InterruptedException e )
+		catch ( final Exception e )
 		{
 			e.printStackTrace();
 		}
@@ -112,7 +112,7 @@ public class ApposeFijiPluginExample implements PlugIn
 				+ "img = image.ndarray()\n"
 				+ "\n"
 				+ "# Rotate the image by 90 degrees (counter-clockwise)\n"
-				+ "rotated_image = rotate(image, angle=90, resize=True)\n"
+				+ "rotated_image = rotate(img, angle=90, resize=True)\n"
 				+ "\n"
 				+ "# Output back to Fiji\n"
 				+ "shared = appose.NDArray(str(rotated_image.dtype), rotated_image.shape)\n"
@@ -130,7 +130,8 @@ public class ApposeFijiPluginExample implements PlugIn
 				+ "  - pip\n"
 				+ "  - scikit-image\n"
 				+ "  - pip:\n"
-				+ "    - numpy\n";
+				+ "    - numpy\n"
+				+ "    - appose\n";
 	}
 
 	private static String indent( final String script )
