@@ -207,7 +207,7 @@ public class ApposeFijiPluginExample implements PlugIn
 		}
 		catch ( final Exception e )
 		{
-			e.printStackTrace();
+			IJ.handleException( e );
 		}
 	}
 
