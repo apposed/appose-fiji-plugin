@@ -1,5 +1,8 @@
 package fiji.plugin.appose.example;
 
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Window;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +29,10 @@ import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
+
+import javax.swing.JDialog;
+import javax.swing.JProgressBar;
+import javax.swing.WindowConstants;
 
 /*
  * This class implements an example of a classical Fiji plugin (not ImageJ2 plugin), 
@@ -65,7 +72,7 @@ public class ApposeFijiPluginExample implements PlugIn
 	/*
 	 * Actually do something with the image.
 	 */
-	public static < T extends RealType< T > & NativeType< T > > void process( final ImagePlus imp ) throws IOException
+	public < T extends RealType< T > & NativeType< T > > void process( final ImagePlus imp ) throws IOException, BuildException
 	{
 		// Print os and arch info
 		System.out.println( "This machine os and arch:" );
@@ -148,8 +155,11 @@ public class ApposeFijiPluginExample implements PlugIn
 		final Environment env = Appose // the builder
 				.mamba() // we chose mamba as the environment manager
 				.content( cellposeEnv ) // specify the environment with the string defined above
-				.logDebug() // log problems
+				.subscribeProgress( this::showProgress ) // report progress visually
+				.subscribeOutput( this::showProgress ) // report output visually
+				.subscribeError( IJ::log ) // log problems
 				.build(); // create the environment
+		hideProgress();
 
 		/*
 		 * Using this environment, we create a service that will run the Python
@@ -295,6 +305,52 @@ public class ApposeFijiPluginExample implements PlugIn
 				+ "# so that it can be retrieved from Java after the script is done. The key 'rotated' is \n"
 				+ "# arbitrary, but it must be the same as the one we use in Java to retrieve the output.\n"
 				+ "task.outputs['rotated'] = shared\n";
+	}
+
+	// Helper functions to display progress while building the Appose environment.
+	// Temporary solution until Appose has a nicer built-in way to do this.
+
+	private JDialog progressDialog;
+	private JProgressBar progressBar;
+	private void showProgress( String msg )
+	{
+		showProgress( msg, null, null );
+	}
+	private void showProgress( String msg, Long cur, Long max )
+	{
+		EventQueue.invokeLater( () ->
+		{
+			if ( progressDialog == null ) {
+				Window owner = IJ.getInstance();
+				progressDialog = new JDialog( owner, "Fiji ♥ Appose" );
+				progressDialog.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+				progressBar = new JProgressBar();
+				progressDialog.getContentPane().add( progressBar );
+				progressBar.setFont( new Font( "Courier", Font.PLAIN, 14 ) );
+				progressBar.setString(
+					"--------------------==================== " +
+					"Building Python environment " +
+					"====================--------------------"
+				);
+				progressBar.setStringPainted( true );
+				progressBar.setIndeterminate( true );
+				progressDialog.pack();
+				progressDialog.setLocationRelativeTo( owner );
+				progressDialog.setVisible( true );
+			}
+			if ( msg != null && !msg.trim().isEmpty() ) progressBar.setString( "Building Python environment: " + msg.trim() );
+			if ( cur != null || max != null ) progressBar.setIndeterminate( false );
+			if ( max != null ) progressBar.setMaximum( max.intValue() );
+			if ( cur != null ) progressBar.setValue( cur.intValue() );
+		} );
+	}
+	private void hideProgress()
+	{
+		EventQueue.invokeLater( () ->
+		{
+			progressDialog.dispose();
+			progressDialog = null;
+		} );
 	}
 
 	/*
