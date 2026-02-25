@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apposed.appose.Appose;
+import org.apposed.appose.BuildException;
 import org.apposed.appose.Environment;
 import org.apposed.appose.NDArray;
 import org.apposed.appose.Service;
@@ -54,7 +55,7 @@ public class ApposeFijiPluginExample implements PlugIn
 			// Runs the processing code.
 			process( imp );
 		}
-		catch ( final IOException e )
+		catch ( final IOException | BuildException e )
 		{
 			IJ.error( "An error occurred: " + e.getMessage() );
 			e.printStackTrace();
