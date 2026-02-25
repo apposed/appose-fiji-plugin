@@ -155,7 +155,7 @@ public class ApposeFijiPluginExample implements PlugIn
 		 * Using this environment, we create a service that will run the Python
 		 * script.
 		 */
-		try (Service python = env.python())
+		try ( Service python = env.python() )
 		{
 			/*
 			 * With this service, we can now create a task that will run the
